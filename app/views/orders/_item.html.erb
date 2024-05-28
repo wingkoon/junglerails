@@ -1,0 +1,16 @@
+<tr>
+  <td>
+    <%= image_tag lineItem.image.tiny.url %>
+  </td>
+  <td>
+    <h4><%= lineItem.name %></h4>
+    <br>
+    <p><%= lineItem.description %></p>
+  </td>
+  <td>
+    $<%= lineItem.price %>
+  </td>
+  <td>
+    $<%= lineItem.price * quantity %>
+  </td>
+</tr>
