@@ -1,59 +1,28 @@
-class OrdersController < ApplicationController
+<section class="products-show">
+  <header class="page-header">
+    <h1><%= link_to @product.category.name, @product.category %> &raquo; <%= @product.name %></h1>
+  </header>
 
-  def show
-    @order = Order.find(params[:id])
-  end
+  <article class="product-detail">
+    <%= image_tag @product.image.url, class: 'main-img' %>
+    <div>
+      <h1><%= @product.name %></h1>
+      <p><%= @product.description %></p>
+      <div class="quantity">
+        <span><%= @product.quantity %> in stock at </span>
+        <span>$<%= @product.price %></span>
+      </div>
+      <div class="price">
 
-  def create
-    charge = perform_stripe_charge
-    order  = create_order(charge)
+      <% if @product.quantity == 0 %>   
+      <button class="btn btn-danger" style="background-color: #EE4266">Sold Out!</button>
+      <% else %>       
+        <%= button_to add_item_cart_path(product_id: @product.id), class: 'btn' , method: :post do %>
+          <%= fa_icon "shopping-cart", text: 'Add' %>
+        <% end %>  
+        <% end %>         
+      </div>
+    </div>
+  </article>
 
-    if order.valid?
-      empty_cart!
-      redirect_to order, notice: 'Your Order has been placed.'
-    else
-      redirect_to cart_path, flash: { error: order.errors.full_messages.first }
-    end
-
-  rescue Stripe::CardError => e
-    redirect_to cart_path, flash: { error: e.message }
-  end
-
-  private
-
-  def empty_cart!
-    # empty hash means no products in cart :)
-    update_cart({})
-  end
-
-  def perform_stripe_charge
-    Stripe::Charge.create(
-      source:      params[:stripeToken],
-      amount:      cart_subtotal_cents,
-      description: "Khurram Virani's Jungle Order",
-      currency:    'cad'
-    )
-  end
-
-  def create_order(stripe_charge)
-    order = Order.new(
-      email: params[:stripeEmail],
-      total_cents: cart_subtotal_cents,
-      stripe_charge_id: stripe_charge.id, # returned by stripe
-    )
-
-    enhanced_cart.each do |entry|
-      product = entry[:product]
-      quantity = entry[:quantity]
-      order.line_items.new(
-        product: product,
-        quantity: quantity,
-        item_price: product.price,
-        total_price: product.price * quantity
-      )
-    end
-    order.save!
-    order
-  end
-
-end
+</section>
